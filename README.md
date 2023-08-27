@@ -60,7 +60,7 @@ ReactNative版：[ReactNative_Eyepetizer](https://github.com/fmtjava/ReactNative
    
  # 更新日志
  ### v1.0
-   * 初始化项目，完成开眼视频App核心功能，目前实现首页、发现、热门、分类、我的、视频详情、视频播放等功能，后续持续学习 Compose 高级的内容，支持完善项目
+   * 初始化项目，完成开眼视频App核心功能，目前实现首页、发现、热门、分类、我的、视频详情、视频播放等功能，后续持续学习 Compose 高级的内容，继续完善项目
 # Thanks
   - [coil](https://github.com/coil-kt/coil) 
   - [JiaoZiVideoPlayer](https://github.com/Jzvd/JZVideo) 
