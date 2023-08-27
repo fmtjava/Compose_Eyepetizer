@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Eyepetizer</string>
+    <string name="daily_paper">日报</string>
+    <string name="discover">发现</string>
+    <string name="hot">热门</string>
+    <string name="mime">我的</string>
+    <string name="loading_error">加载失败</string>
+    <string name="add_follow">+关注</string>
+    <string name="view_personal_homepage">查看个人主页 ></string>
+    <string name="collect">收藏</string>
+    <string name="comment">评论</string>
+    <string name="my_message">我的消息</string>
+    <string name="my_record">我的记录</string>
+    <string name="my_cache">我的缓存</string>
+    <string name="watch_record">观看记录</string>
+    <string name="my_barrage">我的弹幕</string>
+    <string name="my_add_chase">我的加追</string>
+    <string name="personalized_attire">个性装扮</string>
+    <string name="my_bookshelf">我的书架</string>
+    <string name="my_chicken_leg">我的鸡腿</string>
+    <string name="my_circle">我的圈儿</string>
+    <string name="my_order">我的订单</string>
+    <string name="my_love">我的点赞</string>
+    <string name="study_center">学习中心</string>
+    <string name="feedback">意见反馈</string>
+</resources>
