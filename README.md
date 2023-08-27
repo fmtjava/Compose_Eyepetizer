@@ -53,12 +53,6 @@ ReactNative版：[ReactNative_Eyepetizer](https://github.com/fmtjava/ReactNative
   <img src="http://m.qpic.cn/psc?/V526iEgm3HgG9w0K6aQL2X9HJE4OnV96/45NBuzDIW489QBoVep5mcXCiAbUjcKu1jBPbX42kshw8FaB*hM5TU20jQpQjg4LV1NbXenIxDopoT11d0sR.PGeysmxV9wV95CPU3xj*weM!/b&bo=IwY4BAAAAAADJxs!&rf=viewer_4"/>
 </div>
 
-# 技术栈
-<div>
-  <img src="http://m.qpic.cn/psc?/V526iEgm3HgG9w0K6aQL2X9HJE4OnV96/45NBuzDIW489QBoVep5mcZLnnAOG7l4.LC*eJ*3vQ1IiIBj8GFEjoeOGbjktQ9q*JCQZXJnNaWn45YBv7*IyH0n*JGTJI.7mdpUEj.N2pu4!/b&bo=WQc4BAAAAAADN3A!&rf=viewer_4"/>
-</div>
-图片可能不够清晰，可clone工程源码，源码工程中包含了XMind文档
-
 # 下载体验 
  - 点击[![](https://img.shields.io/badge/Download-apk-green.svg)](https://www.pgyer.com/Bbn8)
  - 下方二维码下载(每日上限100次，如达到上限，还是 clone 源码吧！✧(≖ ◡ ≖✿))）<br/>
@@ -68,7 +62,7 @@ ReactNative版：[ReactNative_Eyepetizer](https://github.com/fmtjava/ReactNative
  ### v1.0
    * 初始化项目，完成开眼视频App核心功能，目前实现首页、发现、热门、分类、我的、视频详情、视频播放等功能，后续持续学习 Compose 高级的内容，支持完善项目
 # Thanks
-  - [coil]([https://github.com/alibaba/ARouter](https://github.com/coil-kt/coil)) 
+  - [coil](https://github.com/coil-kt/coil) 
   - [JiaoZiVideoPlayer](https://github.com/Jzvd/JZVideo) 
   - [compose-collapsing-toolbar](https://github.com/onebone/compose-collapsing-toolbar) 
   - [retrofit2](https://github.com/square/retrofit)
