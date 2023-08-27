@@ -54,9 +54,9 @@ ReactNative版：[ReactNative_Eyepetizer](https://github.com/fmtjava/ReactNative
 </div>
 
 # 下载体验 
- - 点击[![](https://img.shields.io/badge/Download-apk-green.svg)](https://www.pgyer.com/Bbn8)
+ - 点击[![](https://img.shields.io/badge/Download-apk-green.svg)](https://www.pgyer.com/2hmCf5)
  - 下方二维码下载(每日上限100次，如达到上限，还是 clone 源码吧！✧(≖ ◡ ≖✿))）<br/>
-   <img src="https://www.pgyer.com/app/qrcode/Bbn8"/>
+   <img src="https://www.pgyer.com/app/qrcode/2hmCf5"/>
    
  # 更新日志
  ### v1.0
