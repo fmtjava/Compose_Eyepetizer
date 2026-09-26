@@ -108,6 +108,12 @@ import com.mikepenz.markdown.model.rememberMarkdownState
                        ▼
                 AI 文字逐字出现
  */
+/**
+ * 聊天页面的状态入口。
+ *
+ * [ChatViewModel.uiState] 是唯一的消息数据源；输入框文本仅属于当前组合，发送后由
+ * ViewModel 负责将其转换为会话消息并驱动流式回复。
+ */
 @Composable
 fun ChatPage(viewModel: ChatViewModel = viewModel()) {
 
@@ -126,6 +132,7 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
 
     val focusManager = LocalFocusManager.current
 
+    // 新增用户消息或助手占位消息时，将视口移动到会话末尾，保证流式回复可见。
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
             listState.animateScrollToItem(
@@ -201,6 +208,11 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
     }
 }
 
+/**
+ * 底部输入栏。
+ *
+ * 生成期间将发送按钮切换为停止按钮，避免同一会话并发发起多个流式请求。
+ */
 @Composable
 private fun ChatInput(
     value: String,
@@ -253,6 +265,9 @@ private fun ChatInput(
     }
 }
 
+/**
+ * 根据消息角色绘制不同方向的气泡；助手消息使用 Markdown，以保留模型输出的格式。
+ */
 @Composable
 private fun ChatMessageItem(message: ChatMessage) {
     val isUser = message.role == ChatRole.USER
@@ -280,6 +295,7 @@ private fun ChatMessageItem(message: ChatMessage) {
                 )
             }
         } else {
+            // 助手尚未产生首个文本块时，用“思考中”反馈请求仍在进行。
             if (message.content.isEmpty() && message.isStreaming) {
                 Row(
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),

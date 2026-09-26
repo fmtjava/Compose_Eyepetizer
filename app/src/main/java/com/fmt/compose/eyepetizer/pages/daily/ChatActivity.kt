@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowInsetsControllerCompat
 
+/** 承载 [ChatPage] 的独立 Activity，并配置与浅色页面相匹配的状态栏样式。 */
 class ChatActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,6 +22,7 @@ class ChatActivity : ComponentActivity() {
     }
 
     companion object {
+        /** 从任意 [Context] 打开聊天页面。 */
         fun start(context: Context) {
             val intent = Intent(context, ChatActivity::class.java)
             context.startActivity(intent)

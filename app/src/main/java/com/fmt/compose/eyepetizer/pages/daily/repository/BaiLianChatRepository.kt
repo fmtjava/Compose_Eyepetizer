@@ -17,26 +17,17 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
 /**
-    HTTP Request
-    ↓
-    response.body.source()
-    ↓
-    逐行读取 SSE
-    ↓
-    data: {...}
-    ↓
-    ChatCompletionChunk
-    ↓
-    choices.firstOrNull()
-    ↓
-    delta.content
-    ↓
-    Flow<String>
+ * 百炼兼容模式聊天接口的实现。
+ *
+ * 它在 IO 调度器中同步读取 SSE 响应，过滤非 `data:` 行和协议结束标记，解析每个数据块的
+ * `delta.content` 后作为 [Flow] 文本增量发出。
  */
 class BaiLianChatRepository() : ChatRepository {
 
     /**
-     *  流失输出：https://docs.bailian.console.aliyun.com/zh/model-studio/stream
+     * 发起启用流式输出的请求，并将 SSE 数据帧转换为内容增量。
+     *
+     * HTTP 非成功状态会以 [IOException] 失败，使 ViewModel 能结束占位消息并显示错误。
      */
     override fun streamChat(messages: List<BaiLianMessage>): Flow<String> = flow {
         val requestBody = ChatCompletionRequest(
@@ -75,7 +66,7 @@ class BaiLianChatRepository() : ChatRepository {
             }
 
             val source = response.body?.source()
-            // 判断流是否读完（没有更多字节可读）
+            // SSE 帧可能包含角色、用量等非文本字段；只有有效的内容增量才向上游发出。
             source?.exhausted()?.let {
                 while (!it) {
                     val line = source.readUtf8Line() ?: break
