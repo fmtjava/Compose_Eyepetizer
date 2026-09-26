@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
             isAppearanceLightStatusBars = true
         }
         setContent {
-            val pagerState = rememberPagerState()
+            val pagerState = rememberPagerState(pageCount = {4})
             Scaffold(backgroundColor = Color.White, bottomBar = {
                 BottomNavigationBar(pagerState)
             }) { padding ->
@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ContentScreen(padding: PaddingValues, pagerState: PagerState) {
-    HorizontalPager(pageCount = 4,
+    HorizontalPager(
         userScrollEnabled = false,
         state = pagerState,
         modifier = Modifier

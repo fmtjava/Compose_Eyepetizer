@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HotPage(viewModel: HotViewModel = viewModel()) {
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(pageCount = { viewModel.tabList.size })
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
@@ -51,9 +51,11 @@ fun HotPage(viewModel: HotViewModel = viewModel()) {
                 pagerState.animateScrollToPage(index)
             }
         }
-        HotTabPageWidget(viewModel.tabList, pagerState, modifier = Modifier
-            .weight(1f)
-            .zIndex(-1f))
+        HotTabPageWidget(
+            viewModel.tabList, pagerState, modifier = Modifier
+                .weight(1f)
+                .zIndex(-1f)
+        )
     }
 }
 
@@ -61,13 +63,15 @@ fun HotPage(viewModel: HotViewModel = viewModel()) {
 fun TitleBarWidget(title: String) {
     TopAppBar(title = {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-            Text(text = title,
+            Text(
+                text = title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis)
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }, backgroundColor = Color.White)
 }
@@ -82,14 +86,19 @@ fun HotTabRowWidget(
         return
     }
 
-    TabRow(selectedTabIndex = selectedIndex,
+    TabRow(
+        selectedTabIndex = selectedIndex,
         backgroundColor = Color.White,
         indicator = { tabPositions ->
-            Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
-                contentAlignment = Alignment.Center) {
-                Divider(modifier = Modifier.width(80.dp),
+            Box(
+                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
+                contentAlignment = Alignment.Center
+            ) {
+                Divider(
+                    modifier = Modifier.width(80.dp),
                     thickness = 3.dp,
-                    color = LocalContentColor.current)
+                    color = LocalContentColor.current
+                )
             }
         }) {
         tabs.forEachIndexed { index, tabInfo ->
@@ -108,7 +117,7 @@ fun HotTabPageWidget(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
 ) {
-    HorizontalPager(pageCount = tabs.size, state = pagerState, modifier = modifier) { pageIndex ->
+    HorizontalPager(state = pagerState, modifier = modifier) { pageIndex ->
         TabHotWidget(tabs[pageIndex])
     }
 }
@@ -130,8 +139,10 @@ fun TabHotWidget(tab: Tab) {
                 item.data?.let { RankItemWidget(itemData = item.data) }
             }
         }
-        PullRefreshIndicator(refreshing = viewModel.refreshing.value,
+        PullRefreshIndicator(
+            refreshing = viewModel.refreshing.value,
             state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter))
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }

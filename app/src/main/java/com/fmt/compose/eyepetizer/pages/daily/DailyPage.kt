@@ -91,6 +91,7 @@ fun DailyPage(viewModel: DailyViewModel = androidx.lifecycle.viewmodel.compose.v
 
 @Composable
 internal fun TitleBarWidget() {
+    val context = LocalContext.current
     TopAppBar(title = {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
             Text(text = stringResource(id = R.string.daily_paper),
@@ -100,7 +101,7 @@ internal fun TitleBarWidget() {
                 textAlign = TextAlign.Center)
         }
     }, actions = {
-        IconButton(onClick = { }) {
+        IconButton(onClick = { ChatActivity.start(context) }) {
             Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = Black_87)
         }
     }, backgroundColor = Color.White)
@@ -112,7 +113,7 @@ fun SwiperWidget(banners: List<Item>) {
     val actualCount = banners.size
     val initialIndex = virtualCount / 2
 
-    val pagerState = rememberPagerState(initialPage = initialIndex)
+    val pagerState = rememberPagerState(initialPage = initialIndex, pageCount = {virtualCount})
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -122,7 +123,6 @@ fun SwiperWidget(banners: List<Item>) {
         .clip(RoundedCornerShape(4.dp))) {
 
         HorizontalPager(
-            pageCount = virtualCount,
             state = pagerState,
         ) { index ->
             val actualIndex = (index - initialIndex).floorMod(actualCount)
@@ -252,4 +252,3 @@ fun Int.floorMod(other: Int): Int = when (other) {
     0 -> this
     else -> this - floorDiv(other = other) * other
 }
-

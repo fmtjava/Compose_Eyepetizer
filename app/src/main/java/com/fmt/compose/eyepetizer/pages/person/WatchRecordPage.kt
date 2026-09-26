@@ -59,7 +59,7 @@ internal fun WatchRecordPage(viewModel: WatchRecordViewModel = viewModel()) {
         }
         LazyColumn {
             items(viewModel.videoList) { videoItem ->
-                VideoItemWidget(modifier = Modifier.animateItemPlacement(),
+                VideoItemWidget(modifier = Modifier,
                     videoItem,
                     coroutineScope) {
                     viewModel.deleteVideo(Video(it.id, toJson(it)))

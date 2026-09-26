@@ -34,7 +34,7 @@ val tabs = listOf("关注", "分类", "专题", "资讯", "推荐")
 fun DiscoverPage(
     viewModel: DiscoverViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
@@ -49,9 +49,11 @@ fun DiscoverPage(
                 pagerState.animateScrollToPage(index)
             }
         }
-        DiscoverTabPageWidget(pagerState, modifier = Modifier
-            .weight(1f)
-            .zIndex(-1f))
+        DiscoverTabPageWidget(
+            pagerState, modifier = Modifier
+                .weight(1f)
+                .zIndex(-1f)
+        )
     }
 }
 
@@ -60,14 +62,19 @@ fun DiscoverTabRowWidget(
     selectedIndex: Int,
     onTabClick: (Int) -> Unit,
 ) {
-    TabRow(selectedTabIndex = selectedIndex,
+    TabRow(
+        selectedTabIndex = selectedIndex,
         backgroundColor = Color.White,
         indicator = { tabPositions ->
-            Box(modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
-                contentAlignment = Alignment.Center) {
-                Divider(modifier = Modifier.width(60.dp),
+            Box(
+                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
+                contentAlignment = Alignment.Center
+            ) {
+                Divider(
+                    modifier = Modifier.width(60.dp),
                     thickness = 3.dp,
-                    color = LocalContentColor.current)
+                    color = LocalContentColor.current
+                )
             }
         }) {
         tabs.forEachIndexed { index, title ->
@@ -85,7 +92,7 @@ fun DiscoverTabPageWidget(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
 ) {
-    HorizontalPager(pageCount = tabs.size, state = pagerState, modifier = modifier) { pageIndex ->
+    HorizontalPager(state = pagerState, modifier = modifier) { pageIndex ->
         when (pageIndex) {
             0 -> FollowPage()
             1 -> CategoryPage()

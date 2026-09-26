@@ -42,6 +42,12 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".pages.daily.ChatActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
