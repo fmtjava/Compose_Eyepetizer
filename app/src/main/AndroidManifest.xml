@@ -20,32 +20,38 @@
             android:name=".pages.discover.CategoryDetailActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Compose_Eyepetizer.PageTransition" />
         <activity
             android:name=".pages.detail.NewsDetailActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Compose_Eyepetizer.PageTransition" />
         <activity
             android:name=".pages.detail.TopicDetailActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Compose_Eyepetizer.PageTransition" />
         <activity
             android:name=".pages.detail.VideoDetailActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Compose_Eyepetizer.PageTransition" />
         <activity
             android:name=".pages.person.WatchRecordActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Compose_Eyepetizer.PageTransition" />
         <activity
             android:name=".pages.daily.ChatActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.Compose_Eyepetizer.PageTransition"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".MainActivity"

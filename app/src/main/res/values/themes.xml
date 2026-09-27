@@ -9,4 +9,16 @@
         <item name="android:windowBackground">@drawable/launch_layer_list</item>
         <item name="android:statusBarColor">@android:color/white</item>
     </style>
+
+    <!-- 详情类页面统一使用水平转场，确保返回键、返回手势和页面顶部返回按钮表现一致。 -->
+    <style name="Theme.Compose_Eyepetizer.PageTransition" parent="Theme.Compose_Eyepetizer">
+        <item name="android:windowAnimationStyle">@style/Animation.ComposeEyepetizer.PageTransition</item>
+    </style>
+
+    <style name="Animation.ComposeEyepetizer.PageTransition" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/activity_slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/activity_slide_out_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/activity_slide_in_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/activity_slide_out_right</item>
+    </style>
 </resources>

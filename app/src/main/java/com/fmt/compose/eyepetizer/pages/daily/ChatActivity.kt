@@ -22,7 +22,7 @@ class ChatActivity : ComponentActivity() {
     }
 
     companion object {
-        /** 从任意 [Context] 打开聊天页面。 */
+        /** Activity 的页面转场由清单中统一配置的主题提供。 */
         fun start(context: Context) {
             val intent = Intent(context, ChatActivity::class.java)
             context.startActivity(intent)
