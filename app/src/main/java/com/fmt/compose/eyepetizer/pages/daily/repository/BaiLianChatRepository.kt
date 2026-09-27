@@ -34,6 +34,8 @@ class BaiLianChatRepository(private val dao: ChatMessageDao) : ChatRepository {
      * HTTP 非成功状态会以 [IOException] 失败，使 ViewModel 能结束占位消息并显示错误。
      */
     override fun streamChat(messages: List<BaiLianMessage>): Flow<String> = flow {
+        // 百炼 OpenAI 兼容模式通过 messages 维护多轮上下文，没有 conversationId 参数。
+        // 调用方已按本地 conversationId 筛选并裁剪历史，这里只负责将其写入请求体。
         val requestBody = ChatCompletionRequest(
             model = BaiLianConfig.MODEL,
             messages = messages,
@@ -145,6 +147,8 @@ class BaiLianChatRepository(private val dao: ChatMessageDao) : ChatRepository {
     }
 
     override suspend fun getLatestConversationId(): String? {
+        // 仅在应用启动时恢复当前本地会话；该 ID 不会直接发送给百炼。
+        // ChatViewModel 用它找出同一会话的消息，并构造 API 请求中的 messages。
         return dao.getLatestMessage()?.conversationId
     }
 }

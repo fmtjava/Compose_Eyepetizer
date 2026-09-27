@@ -1,10 +1,8 @@
 package com.fmt.compose.eyepetizer.pages.daily.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fmt.compose.eyepetizer.db.CacheManager
-import com.fmt.compose.eyepetizer.ext.toJson
 import com.fmt.compose.eyepetizer.model.ChatMessage
 import com.fmt.compose.eyepetizer.model.ChatRole
 import com.fmt.compose.eyepetizer.pages.daily.builder.ContextBuilder
@@ -53,6 +51,8 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch {
             runCatching {
                 val messages = repository.loadMessages()
+                // conversationId 仅在客户端给消息分组；百炼兼容接口不接收该字段。
+                // 发送时会以它筛选同一会话的消息，并将筛选结果放进 request.messages。
                 val latestConversationId = repository.getLatestConversationId()
                 currentConversationId = latestConversationId ?: UUID.randomUUID().toString()
                 _uiState.update {
@@ -98,6 +98,7 @@ class ChatViewModel : ViewModel() {
                     .also {
                         currentConversationId = it
                     }
+        // 固定本次发送所属会话，用户消息、助手占位消息和请求上下文都使用同一个 ID。
         // 用户消息会立即显示；助手占位消息随后接收每个 SSE 文本增量。
         val userMessage = ChatMessage(
             role = ChatRole.USER,
@@ -129,12 +130,17 @@ class ChatViewModel : ViewModel() {
          *
          * assistantMessage 此时还是空字符串，
          * 不能把它发送给百炼。
+         *
+         * conversationId 不会作为接口字段发送；它只用于从本地消息中选出当前会话的
+         * 历史记录，ContextBuilder 再将这些记录转换为百炼所需的 messages 数组。
          */
         val requestMessages =
             contextBuilder.build(
                 _uiState.value.messages
                     .filter { message ->
-                        message.conversationId == currentConversationId
+                        // String 用 == 比较内容。历史消息与当前会话 ID 来自不同的
+                        // Room 查询，即使值相同，也不能依赖 === 的对象引用相同。
+                        message.conversationId == conversationId
                     }
                     .filterNot {
                         it.id == assistantMessage.id
@@ -283,6 +289,8 @@ class ChatViewModel : ViewModel() {
         currentConversationId = UUID.randomUUID().toString()
 
         // 清空当前会话状态
-        _uiState.value = ChatUiState(isLoading = false)
+        _uiState.update {
+            it.copy(isLoading = false, isGenerating = false, error = null)
+        }
     }
 }
