@@ -78,7 +78,7 @@ dependencies {
     implementation "me.onebone:toolbar-compose:2.3.5"
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 
-    implementation("com.mikepenz:multiplatform-markdown-renderer-m2:0.38.1")
+    implementation 'com.github.jeziellago:compose-markdown:0.7.2'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

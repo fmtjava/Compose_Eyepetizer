@@ -52,12 +52,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -68,10 +64,7 @@ import com.fmt.compose.eyepetizer.R
 import com.fmt.compose.eyepetizer.model.ChatMessage
 import com.fmt.compose.eyepetizer.model.ChatRole
 import com.fmt.compose.eyepetizer.pages.daily.viewmodel.ChatViewModel
-import com.mikepenz.markdown.m2.Markdown
-import com.mikepenz.markdown.model.DefaultMarkdownTypography
-import com.mikepenz.markdown.model.MarkdownTypography
-import com.mikepenz.markdown.model.rememberMarkdownState
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 /*
                       Jetpack Compose
@@ -133,11 +126,6 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
     if (state.isLoading) {
         LoadingScreen()
         return
-    }
-
-    val materialTypography = MaterialTheme.typography
-    val assistantMarkdownTypography = remember(materialTypography) {
-        compactChatMarkdownTypography(materialTypography)
     }
 
     var input by remember {
@@ -214,10 +202,7 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
                 // 按消息角色复用列表项，避免滚动时在不同消息布局间反复重建节点。
                 contentType = { it.role }
             ) { message ->
-                ChatMessageItem(
-                    message = message,
-                    assistantMarkdownTypography = assistantMarkdownTypography,
-                )
+                ChatMessageItem(message = message)
             }
         }
 
@@ -356,10 +341,7 @@ private fun ChatInput(
  * 根据消息角色绘制不同方向的气泡；助手消息使用 Markdown，以保留模型输出的格式。
  */
 @Composable
-private fun ChatMessageItem(
-    message: ChatMessage,
-    assistantMarkdownTypography: MarkdownTypography,
-) {
+private fun ChatMessageItem(message: ChatMessage, ) {
     val isUser = message.role == ChatRole.USER
 
     Row(
@@ -401,10 +383,6 @@ private fun ChatMessageItem(
                     )
                 }
             } else {
-                val markdownState = rememberMarkdownState(
-                    content = message.content,
-                    retainState = true,
-                )
                 Surface(
                     modifier = Modifier.widthIn(max = 320.dp),
                     shape = RoundedCornerShape(
@@ -416,64 +394,10 @@ private fun ChatMessageItem(
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.06f),
                 ) {
                     Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                        Markdown(
-                            markdownState = markdownState,
-                            typography = assistantMarkdownTypography,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        MarkdownText(message.content)
                     }
                 }
             }
         }
     }
-}
-
-/** 为聊天气泡创建紧凑的 Markdown 排版；由 [ChatPage] 缓存并供全部消息共用。 */
-private fun compactChatMarkdownTypography(
-    typography: androidx.compose.material.Typography,
-): MarkdownTypography {
-    val body = typography.body1.copy(fontSize = 16.sp, lineHeight = 24.sp)
-    return DefaultMarkdownTypography(
-        h1 = typography.h6.copy(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold),
-        h2 = typography.subtitle1.copy(
-            fontSize = 20.sp,
-            lineHeight = 26.sp,
-            fontWeight = FontWeight.Bold
-        ),
-        h3 = typography.subtitle1.copy(
-            fontSize = 18.sp,
-            lineHeight = 24.sp,
-            fontWeight = FontWeight.Bold
-        ),
-        h4 = typography.body1.copy(
-            fontSize = 17.sp,
-            lineHeight = 23.sp,
-            fontWeight = FontWeight.Bold
-        ),
-        h5 = typography.body1.copy(
-            fontSize = 16.sp,
-            lineHeight = 22.sp,
-            fontWeight = FontWeight.Bold
-        ),
-        h6 = typography.body1.copy(
-            fontSize = 16.sp,
-            lineHeight = 22.sp,
-            fontWeight = FontWeight.Bold
-        ),
-        text = body,
-        code = typography.body2.copy(fontFamily = FontFamily.Monospace),
-        inlineCode = body.copy(fontFamily = FontFamily.Monospace),
-        quote = typography.body2.copy(fontStyle = FontStyle.Italic),
-        paragraph = body,
-        ordered = body,
-        bullet = body,
-        list = body,
-        textLink = TextLinkStyles(
-            style = body.toSpanStyle().copy(
-                fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.Underline,
-            ),
-        ),
-        table = body,
-    )
 }
