@@ -2,11 +2,15 @@ package com.fmt.compose.eyepetizer.pages.daily.repository
 
 import com.fmt.compose.eyepetizer.config.AppModule
 import com.fmt.compose.eyepetizer.config.BaiLianConfig
+import com.fmt.compose.eyepetizer.db.ChatMessageDao
+import com.fmt.compose.eyepetizer.db.ChatMessageEntity
 import com.fmt.compose.eyepetizer.ext.fromJson
 import com.fmt.compose.eyepetizer.ext.toJson
 import com.fmt.compose.eyepetizer.model.BaiLianMessage
 import com.fmt.compose.eyepetizer.model.ChatCompletionChunk
 import com.fmt.compose.eyepetizer.model.ChatCompletionRequest
+import com.fmt.compose.eyepetizer.model.ChatMessage
+import com.fmt.compose.eyepetizer.model.ChatRole
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -22,7 +26,7 @@ import java.io.IOException
  * 它在 IO 调度器中同步读取 SSE 响应，过滤非 `data:` 行和协议结束标记，解析每个数据块的
  * `delta.content` 后作为 [Flow] 文本增量发出。
  */
-class BaiLianChatRepository() : ChatRepository {
+class BaiLianChatRepository(private val dao: ChatMessageDao) : ChatRepository {
 
     /**
      * 发起启用流式输出的请求，并将 SSE 数据帧转换为内容增量。
@@ -103,4 +107,49 @@ class BaiLianChatRepository() : ChatRepository {
             }
         }
     }.flowOn(Dispatchers.IO)
+
+    override suspend fun saveMessage(conversationId: String, message: ChatMessage) {
+        dao.insert(
+            ChatMessageEntity(
+                id = message.id,
+                conversationId =
+                    conversationId,
+                role = when (
+                    message.role
+                ) {
+                    ChatRole.USER ->
+                        "user"
+
+                    ChatRole.ASSISTANT ->
+                        "assistant"
+                },
+                content = message.content,
+                createdAt =
+                    message.createdAt
+            )
+        )
+    }
+
+    override suspend fun loadMessages(): List<ChatMessage> {
+        return dao
+            .getAll()
+            .map { entity ->
+                ChatMessage(
+                    id = entity.id,
+                    role =
+                        if (
+                            entity.role ==
+                            "user"
+                        ) {
+                            ChatRole.USER
+                        } else {
+                            ChatRole.ASSISTANT
+                        },
+
+                    content = entity.content,
+                    isStreaming = false,
+                    createdAt = entity.createdAt
+                )
+            }
+    }
 }

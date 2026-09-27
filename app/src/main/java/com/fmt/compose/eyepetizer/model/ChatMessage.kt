@@ -19,5 +19,6 @@ data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
     val role: ChatRole,
     val content: String,
-    val isStreaming: Boolean = false
+    val isStreaming: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
 )

@@ -1,6 +1,7 @@
 package com.fmt.compose.eyepetizer.pages.daily.repository
 
 import com.fmt.compose.eyepetizer.model.BaiLianMessage
+import com.fmt.compose.eyepetizer.model.ChatMessage
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,4 +12,8 @@ import kotlinx.coroutines.flow.Flow
 interface ChatRepository {
 
     fun streamChat(messages: List<BaiLianMessage>): Flow<String>
+
+    suspend fun saveMessage(conversationId: String, message: ChatMessage)
+
+    suspend fun loadMessages(): List<ChatMessage>
 }

@@ -2,6 +2,7 @@ package com.fmt.compose.eyepetizer.pages.daily.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fmt.compose.eyepetizer.db.CacheManager
 import com.fmt.compose.eyepetizer.model.ChatMessage
 import com.fmt.compose.eyepetizer.model.ChatRole
 import com.fmt.compose.eyepetizer.pages.daily.builder.ContextBuilder
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 class ChatViewModel : ViewModel() {
 
     /** 延迟创建仓储，避免 ViewModel 初始化时立即构造网络相关对象。 */
-    private val repository: BaiLianChatRepository by lazy { BaiLianChatRepository() }
+    private val repository: BaiLianChatRepository by lazy { BaiLianChatRepository(CacheManager.get().chatMessageDao) }
 
     /** 可变状态仅在 ViewModel 内部持有，页面只能订阅只读状态流。 */
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -35,6 +36,27 @@ class ChatViewModel : ViewModel() {
 
     /** 当前流式请求的协程，用于支持用户主动停止生成。 */
     private var generateJob: Job? = null
+
+    /** 当前会话 ID。*/
+    private var currentConversationId = UUID.randomUUID().toString()
+
+    init {
+        loadHistory()
+    }
+
+    /**
+     *  加载历史数据
+     */
+    private fun loadHistory() {
+        viewModelScope.launch {
+            val messages = repository.loadMessages()
+            _uiState.update {
+                it.copy(
+                    messages = messages
+                )
+            }
+        }
+    }
 
     /**
      * 发送一条用户消息并开始接收助手的流式回复。
@@ -85,6 +107,14 @@ class ChatViewModel : ViewModel() {
 
         generateJob = viewModelScope.launch {
             try {
+                // 保存用户消息
+                repository.saveMessage(
+                    conversationId =
+                        currentConversationId,
+                    message =
+                        userMessage
+                )
+                // AI 流式请求
                 repository
                     .streamChat(requestMessages)
                     .collect { delta ->
@@ -94,6 +124,10 @@ class ChatViewModel : ViewModel() {
                         )
                     }
                 finishAssistantMessage(
+                    assistantMessage.id
+                )
+                // AI 完成后再保存
+                saveAssistantMessage(
                     assistantMessage.id
                 )
             } catch (e: Exception) {
@@ -176,6 +210,33 @@ class ChatViewModel : ViewModel() {
         }
     }
 
+    /**
+     *  保存大模型返回的消息
+     */
+    private suspend fun saveAssistantMessage(
+        id: String
+    ) {
+        val message =
+            _uiState.value.messages
+                .firstOrNull {
+                    it.id == id
+                }
+                ?: return
+
+        if (message.content.isBlank()) {
+            return
+        }
+
+        repository.saveMessage(
+            conversationId =
+                currentConversationId,
+            message =
+                message.copy(
+                    isStreaming = false
+                )
+        )
+    }
+
     /** 取消进行中的请求并将页面状态恢复为初始会话。 */
     fun clearConversation() {
         generateJob?.cancel()
@@ -189,6 +250,8 @@ class ChatViewModel : ViewModel() {
         // 取消旧对话正在进行的请求
         generateJob?.cancel()
         generateJob = null
+
+        currentConversationId = UUID.randomUUID().toString()
 
         // 清空当前会话状态
         _uiState.value = ChatUiState()
