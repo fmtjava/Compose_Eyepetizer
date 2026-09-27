@@ -1,8 +1,10 @@
 package com.fmt.compose.eyepetizer.pages.daily.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fmt.compose.eyepetizer.db.CacheManager
+import com.fmt.compose.eyepetizer.ext.toJson
 import com.fmt.compose.eyepetizer.model.ChatMessage
 import com.fmt.compose.eyepetizer.model.ChatRole
 import com.fmt.compose.eyepetizer.pages.daily.builder.ContextBuilder
@@ -38,7 +40,7 @@ class ChatViewModel : ViewModel() {
     private var generateJob: Job? = null
 
     /** 当前会话 ID。*/
-    private var currentConversationId = UUID.randomUUID().toString()
+    private var currentConversationId: String? = null
 
     init {
         loadHistory()
@@ -49,11 +51,27 @@ class ChatViewModel : ViewModel() {
      */
     private fun loadHistory() {
         viewModelScope.launch {
-            val messages = repository.loadMessages()
-            _uiState.update {
-                it.copy(
-                    messages = messages
-                )
+            runCatching {
+                val messages = repository.loadMessages()
+                val latestConversationId = repository.getLatestConversationId()
+                currentConversationId = latestConversationId ?: UUID.randomUUID().toString()
+                _uiState.update {
+                    it.copy(
+                        messages = messages,
+                        isLoading = false
+                    )
+                }
+            }.onFailure { error ->
+                // 即使历史加载失败，
+                // 也允许用户开始一个新会话
+                currentConversationId = UUID.randomUUID().toString()
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = error.message
+                    )
+                }
             }
         }
     }
@@ -73,11 +91,23 @@ class ChatViewModel : ViewModel() {
         if (_uiState.value.isGenerating) {
             return
         }
+        val conversationId =
+            currentConversationId
+                ?: UUID.randomUUID()
+                    .toString()
+                    .also {
+                        currentConversationId = it
+                    }
         // 用户消息会立即显示；助手占位消息随后接收每个 SSE 文本增量。
-        val userMessage = ChatMessage(role = ChatRole.USER, content = content)
+        val userMessage = ChatMessage(
+            role = ChatRole.USER,
+            content = content,
+            conversationId = conversationId
+        )
 
         val assistantMessage = ChatMessage(
             id = UUID.randomUUID().toString(),
+            conversationId = conversationId,
             role = ChatRole.ASSISTANT,
             content = "",
             isStreaming = true
@@ -95,25 +125,26 @@ class ChatViewModel : ViewModel() {
         }
 
         /*
-         * 非常重要：
+         * 非常重要：构造百炼上下文时只取当前 Conversation
          *
          * assistantMessage 此时还是空字符串，
          * 不能把它发送给百炼。
          */
         val requestMessages =
-            contextBuilder.build(_uiState.value.messages.filterNot {
-                it.id == assistantMessage.id
-            })
+            contextBuilder.build(
+                _uiState.value.messages
+                    .filter { message ->
+                        message.conversationId == currentConversationId
+                    }
+                    .filterNot {
+                        it.id == assistantMessage.id
+                    }
+            )
 
         generateJob = viewModelScope.launch {
             try {
                 // 保存用户消息
-                repository.saveMessage(
-                    conversationId =
-                        currentConversationId,
-                    message =
-                        userMessage
-                )
+                repository.saveMessage(message = userMessage)
                 // AI 流式请求
                 repository
                     .streamChat(requestMessages)
@@ -228,8 +259,6 @@ class ChatViewModel : ViewModel() {
         }
 
         repository.saveMessage(
-            conversationId =
-                currentConversationId,
             message =
                 message.copy(
                     isStreaming = false
@@ -254,6 +283,6 @@ class ChatViewModel : ViewModel() {
         currentConversationId = UUID.randomUUID().toString()
 
         // 清空当前会话状态
-        _uiState.value = ChatUiState()
+        _uiState.value = ChatUiState(isLoading = false)
     }
 }

@@ -108,24 +108,17 @@ class BaiLianChatRepository(private val dao: ChatMessageDao) : ChatRepository {
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun saveMessage(conversationId: String, message: ChatMessage) {
+    override suspend fun saveMessage(message: ChatMessage) {
         dao.insert(
             ChatMessageEntity(
                 id = message.id,
-                conversationId =
-                    conversationId,
-                role = when (
-                    message.role
-                ) {
-                    ChatRole.USER ->
-                        "user"
-
-                    ChatRole.ASSISTANT ->
-                        "assistant"
+                conversationId = message.conversationId,
+                role = when (message.role) {
+                    ChatRole.USER -> "user"
+                    ChatRole.ASSISTANT -> "assistant"
                 },
                 content = message.content,
-                createdAt =
-                    message.createdAt
+                createdAt = message.createdAt
             )
         )
     }
@@ -136,11 +129,9 @@ class BaiLianChatRepository(private val dao: ChatMessageDao) : ChatRepository {
             .map { entity ->
                 ChatMessage(
                     id = entity.id,
+                    conversationId = entity.conversationId,
                     role =
-                        if (
-                            entity.role ==
-                            "user"
-                        ) {
+                        if (entity.role == "user") {
                             ChatRole.USER
                         } else {
                             ChatRole.ASSISTANT
@@ -151,5 +142,9 @@ class BaiLianChatRepository(private val dao: ChatMessageDao) : ChatRepository {
                     createdAt = entity.createdAt
                 )
             }
+    }
+
+    override suspend fun getLatestConversationId(): String? {
+        return dao.getLatestMessage()?.conversationId
     }
 }

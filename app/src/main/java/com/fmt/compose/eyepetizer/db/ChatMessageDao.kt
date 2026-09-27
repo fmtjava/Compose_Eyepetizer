@@ -18,4 +18,11 @@ interface ChatMessageDao {
     )
     suspend fun getAll(): List<ChatMessageEntity>
 
+    @Query(
+        """
+            select * from chat_messages order by createdAt desc limit 1
+        """
+    )
+    suspend fun getLatestMessage(): ChatMessageEntity?
+
 }

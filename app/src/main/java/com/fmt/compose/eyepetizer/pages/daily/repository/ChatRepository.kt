@@ -13,7 +13,9 @@ interface ChatRepository {
 
     fun streamChat(messages: List<BaiLianMessage>): Flow<String>
 
-    suspend fun saveMessage(conversationId: String, message: ChatMessage)
+    suspend fun saveMessage(message: ChatMessage)
 
     suspend fun loadMessages(): List<ChatMessage>
+
+    suspend fun getLatestConversationId(): String?
 }

@@ -17,6 +17,7 @@ enum class ChatRole {
 @Immutable
 data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
+    val conversationId: String, // 当前的消息属于那次对话
     val role: ChatRole,
     val content: String,
     val isStreaming: Boolean = false,

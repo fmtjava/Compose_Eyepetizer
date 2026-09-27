@@ -129,6 +129,12 @@ import com.mikepenz.markdown.model.rememberMarkdownState
 fun ChatPage(viewModel: ChatViewModel = viewModel()) {
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    if (state.isLoading) {
+        LoadingScreen()
+        return
+    }
+
     val materialTypography = MaterialTheme.typography
     val assistantMarkdownTypography = remember(materialTypography) {
         compactChatMarkdownTypography(materialTypography)
@@ -238,6 +244,16 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
         }, onStop = {
             viewModel.stopGenerating()
         })
+    }
+}
+
+@Composable
+private fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
     }
 }
 
@@ -419,11 +435,31 @@ private fun compactChatMarkdownTypography(
     val body = typography.body1.copy(fontSize = 16.sp, lineHeight = 24.sp)
     return DefaultMarkdownTypography(
         h1 = typography.h6.copy(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold),
-        h2 = typography.subtitle1.copy(fontSize = 20.sp, lineHeight = 26.sp, fontWeight = FontWeight.Bold),
-        h3 = typography.subtitle1.copy(fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold),
-        h4 = typography.body1.copy(fontSize = 17.sp, lineHeight = 23.sp, fontWeight = FontWeight.Bold),
-        h5 = typography.body1.copy(fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Bold),
-        h6 = typography.body1.copy(fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Bold),
+        h2 = typography.subtitle1.copy(
+            fontSize = 20.sp,
+            lineHeight = 26.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        h3 = typography.subtitle1.copy(
+            fontSize = 18.sp,
+            lineHeight = 24.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        h4 = typography.body1.copy(
+            fontSize = 17.sp,
+            lineHeight = 23.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        h5 = typography.body1.copy(
+            fontSize = 16.sp,
+            lineHeight = 22.sp,
+            fontWeight = FontWeight.Bold
+        ),
+        h6 = typography.body1.copy(
+            fontSize = 16.sp,
+            lineHeight = 22.sp,
+            fontWeight = FontWeight.Bold
+        ),
         text = body,
         code = typography.body2.copy(fontFamily = FontFamily.Monospace),
         inlineCode = body.copy(fontFamily = FontFamily.Monospace),
