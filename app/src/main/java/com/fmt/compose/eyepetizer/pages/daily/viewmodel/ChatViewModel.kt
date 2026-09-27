@@ -181,4 +181,16 @@ class ChatViewModel : ViewModel() {
         generateJob?.cancel()
         _uiState.value = ChatUiState()
     }
+
+    // =========================
+    // 新建对话
+    // =========================
+    fun newChat() {
+        // 取消旧对话正在进行的请求
+        generateJob?.cancel()
+        generateJob = null
+
+        // 清空当前会话状态
+        _uiState.value = ChatUiState()
+    }
 }

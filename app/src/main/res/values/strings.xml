@@ -25,4 +25,6 @@
     <string name="feedback">意见反馈</string>
     <string name="ai_assist">AI 小助理</string>
     <string name="thinking">正在思考中...</string>
+    <string name="new_chat">新建对话</string>
+    <string name="new_chat_has_done">已新建对话</string>
 </resources>

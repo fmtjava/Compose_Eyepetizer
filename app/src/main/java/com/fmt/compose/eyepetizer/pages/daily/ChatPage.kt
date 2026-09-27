@@ -3,6 +3,7 @@
 package com.fmt.compose.eyepetizer.pages.daily
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imeNestedScroll
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +23,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -31,7 +32,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
@@ -42,24 +46,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fmt.compose.eyepetizer.R
 import com.fmt.compose.eyepetizer.model.ChatMessage
 import com.fmt.compose.eyepetizer.model.ChatRole
 import com.fmt.compose.eyepetizer.pages.daily.viewmodel.ChatViewModel
-import com.fmt.compose.eyepetizer.view.TopTitleAppBar
 import com.mikepenz.markdown.m2.Markdown
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.input.ImeAction
 import com.mikepenz.markdown.model.rememberMarkdownState
 
 /*
@@ -151,11 +156,26 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         val context = LocalContext.current
-        TopTitleAppBar(title = stringResource(id = R.string.ai_assist)) {
-            if (context is Activity) {
-                context.finish()
+        ChatTopBar(onNewChat = {
+            // 当前什么都没有，不需要处理
+            if (state.messages.isEmpty() && input.isBlank()) {
+                return@ChatTopBar
             }
-        }
+            // 1. 清空输入框
+            input = ""
+
+            // 2. 清除输入框焦点
+            focusManager.clearFocus()
+
+            // 3. 收起键盘
+            keyboardController?.hide()
+
+            // 4. 创建新会话
+            viewModel.newChat()
+
+            // 5. 给用户反馈
+            Toast.makeText(context, R.string.new_chat_has_done, Toast.LENGTH_SHORT).show()
+        })
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -206,6 +226,44 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
             viewModel.stopGenerating()
         })
     }
+}
+
+@Composable
+private fun ChatTopBar(onNewChat: () -> Unit) {
+    val context = LocalContext.current
+    TopAppBar(
+        title = {
+            Text(
+                text = stringResource(id = R.string.ai_assist),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        backgroundColor = Color.White,
+        navigationIcon = {
+            IconButton(onClick = {
+                if (context is Activity) {
+                    context.finish()
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = null
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = onNewChat) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.new_chat)
+                )
+            }
+        })
 }
 
 /**
@@ -324,7 +382,6 @@ private fun ChatMessageItem(message: ChatMessage) {
                         bottomEnd = 12.dp,
                     ),
                     color = MaterialTheme.colors.onSurface.copy(alpha = 0.06f),
-                    elevation = 1.dp,
                 ) {
                     Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                         Markdown(
