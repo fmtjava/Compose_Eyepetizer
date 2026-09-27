@@ -1,5 +1,6 @@
 package com.fmt.compose.eyepetizer.pages.daily.viewmodel
 
+import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fmt.compose.eyepetizer.db.CacheManager
@@ -22,6 +23,11 @@ import kotlinx.coroutines.launch
  * 消息，因此 UI 不需要维护独立的“正在输入”文本。
  */
 class ChatViewModel : ViewModel() {
+
+    /** 限制流式回复触发 Markdown 重解析和页面重组的频率，同时保留打字反馈。 */
+    private companion object {
+        const val STREAM_UI_UPDATE_INTERVAL_MS = 100L
+    }
 
     /** 延迟创建仓储，避免 ViewModel 初始化时立即构造网络相关对象。 */
     private val repository: BaiLianChatRepository by lazy { BaiLianChatRepository(CacheManager.get().chatMessageDao) }
@@ -148,6 +154,23 @@ class ChatViewModel : ViewModel() {
             )
 
         generateJob = viewModelScope.launch {
+            val pendingDeltas = StringBuilder()
+            var lastUiUpdateAt = 0L
+
+            // 多个 SSE 小片段合并为一次 UI 更新，避免长 Markdown 在每个 delta 到达时
+            // 都重新解析与测量。正常完成或请求失败前都会把剩余内容刷新出来。
+            fun flushPendingDeltas() {
+                if (pendingDeltas.isEmpty()) {
+                    return
+                }
+                appendAssistantContent(
+                    id = assistantMessage.id,
+                    delta = pendingDeltas.toString(),
+                )
+                pendingDeltas.setLength(0)
+                lastUiUpdateAt = SystemClock.uptimeMillis()
+            }
+
             try {
                 // 保存用户消息
                 repository.saveMessage(message = userMessage)
@@ -155,11 +178,15 @@ class ChatViewModel : ViewModel() {
                 repository
                     .streamChat(requestMessages)
                     .collect { delta ->
-                        appendAssistantContent(
-                            id = assistantMessage.id,
-                            delta = delta
-                        )
+                        pendingDeltas.append(delta)
+                        if (
+                            SystemClock.uptimeMillis() - lastUiUpdateAt >=
+                            STREAM_UI_UPDATE_INTERVAL_MS
+                        ) {
+                            flushPendingDeltas()
+                        }
                     }
+                flushPendingDeltas()
                 finishAssistantMessage(
                     assistantMessage.id
                 )
@@ -171,6 +198,7 @@ class ChatViewModel : ViewModel() {
                 if (e is kotlinx.coroutines.CancellationException) {
                     throw e
                 }
+                flushPendingDeltas()
                 finishWithError(
                     assistantMessage.id,
                     e
