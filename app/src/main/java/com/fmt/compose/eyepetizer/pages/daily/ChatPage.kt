@@ -21,11 +21,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -65,6 +67,9 @@ import com.fmt.compose.eyepetizer.model.ChatMessage
 import com.fmt.compose.eyepetizer.model.ChatRole
 import com.fmt.compose.eyepetizer.pages.daily.viewmodel.ChatViewModel
 import dev.jeziellago.compose.markdowntext.MarkdownText
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /*
                       Jetpack Compose
@@ -196,12 +201,22 @@ fun ChatPage(viewModel: ChatViewModel = viewModel()) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(
+            itemsIndexed(
                 items = state.messages,
-                key = { it.id },
-                // 按消息角色复用列表项，避免滚动时在不同消息布局间反复重建节点。
-                contentType = { it.role }
-            ) { message ->
+                key = { _, message ->
+                    message.id
+                },
+                contentType = { _, message ->
+                    message.role
+                }
+            ) { index, message ->
+                val previousMessage = state.messages.getOrNull(index - 1)
+                val isNewConversation =
+                    previousMessage != null && previousMessage.conversationId != message.conversationId
+
+                if (isNewConversation) {
+                    ConversationDivider(timestamp = message.createdAt)
+                }
                 ChatMessageItem(message = message)
             }
         }
@@ -341,7 +356,7 @@ private fun ChatInput(
  * 根据消息角色绘制不同方向的气泡；助手消息使用 Markdown，以保留模型输出的格式。
  */
 @Composable
-private fun ChatMessageItem(message: ChatMessage, ) {
+private fun ChatMessageItem(message: ChatMessage) {
     val isUser = message.role == ChatRole.USER
 
     Row(
@@ -400,4 +415,51 @@ private fun ChatMessageItem(message: ChatMessage, ) {
             }
         }
     }
+}
+
+/**
+ *  新对话分割线
+ */
+@Composable
+private fun ConversationDivider(
+    timestamp: Long
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Divider(modifier = Modifier.weight(1f))
+        Text(
+            text = "${formatConversationTime(timestamp)} · 新对话",
+            modifier =
+                Modifier.padding(
+                    horizontal = 12.dp
+                ),
+            style = MaterialTheme.typography.caption
+        )
+        Divider(
+            modifier =
+                Modifier.weight(1f)
+        )
+    }
+}
+
+/**
+ *  新对话时间格式化
+ */
+private fun formatConversationTime(
+    timestamp: Long
+): String {
+
+    val formatter =
+        SimpleDateFormat(
+            "MM月dd日 HH:mm",
+            Locale.getDefault()
+        )
+
+    return formatter.format(
+        Date(timestamp)
+    )
 }
